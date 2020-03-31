@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Ajax超时测试</title>
+	 <script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+</head>
+<body>
+	<script>
+		$(function(){
+			$.ajax({
+			    url : 'ajax_timeout.php',
+			    timeout : 3000,
+		   }).done(function(res){
+		   		alert(res)
+		   }).fail(function(xhr, StatusText){
+		   		alert(StatusText);
+		   }).always(function(){
+		   		alert('done');
+		   });
+		});
+	</script>
+</body>
+</html>
