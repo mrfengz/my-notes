@@ -117,6 +117,168 @@ backend/index.php 入口文件
 				requestAction
 				layout
 				requestedParams
+				extensions 		已安装的yii扩展，启动过程中会初始化，没有配置的话，会使用 @vendor/yiisoft/extensions.php
+				bootstrap 		组件数组，在bootstrap时运行的。 数组、闭包、类名、module Id、component Id
+				state 			application当前所处请求的state
+				loadedModules 	类名为键
+			methods:
+				__construct($config)
+					1. Yii::$app = $this, static::setInstance($this)
+						if ($instance!== null) $loadedModules[get_class($instance)]
+						else Yii::$app->loadModules[get_class_called()];
+
+					2. $this->state = begin
+					
+					3. $this->preInit(&$config) 参数引用传递
+						setBasePath()/setVendorPath()/setRuntimePath()/setTimeZone()
+						setContainer()
+						coreComponents() -> $config['components'][$id]
+					
+					4. $this->registerErrorHandler($config)
+						
+					5. Component::__construct($config);
+						Yii::configure($this, $config); //把config中的参数，设置为application的属性
+
+				Application::bootstrap()
+
+				Application::init()
+					1. $this->state = START_INIT;
+					2. $this->bootstrap()
+						加载extensions 
+							extensions['alias']
+							extensions['bootstrap']
+						$this->bootstrap 组件实例化
+				
+				Application::registerErrorHandler(&$config)
+
+				Application::getUniqueId()
+
+				Application::setBasePath()
+				Application::getRuntimePath()
+				Application::setRuntimePath()
+				Application::getVendorPath()
+				Application::setVendorPath()
+				Application::getTimeZone()
+				Application::setTimeZone()
+
+				Application::getDb()
+				Application::getLog()
+				Application::getErrorHandler()
+				Application::getCache()
+				Application::getFormatter()
+				Application::getRequest()
+				Application::getResponse()
+				Application::getView()
+				Application::getUrlManager()
+				Application::getI18n()		
+				Application::getMailer()
+				Application::getAuthManager()
+				Application::getAssetManager()
+				Application::getSecurity()
+
+				Application::coreComponents
+					return [
+			            'log' => ['class' => 'yii\log\Dispatcher'],
+			            'view' => ['class' => 'yii\web\View'],
+			            'formatter' => ['class' => 'yii\i18n\Formatter'],
+			            'i18n' => ['class' => 'yii\i18n\I18N'],
+			            'mailer' => ['class' => 'yii\swiftmailer\Mailer'],
+			            'urlManager' => ['class' => 'yii\web\UrlManager'],
+			            'assetManager' => ['class' => 'yii\web\AssetManager'],
+			            'security' => ['class' => 'yii\base\Security'],
+			        ];
+
+				Application::setContainer($config)
+					Yii::configure(Yii::$container, $config);
+
+				Application::run()
+					<!-- 请求前事件处理 -->
+					$this->state = self::STATE_BEFORE_REQUEST;
+		            $this->trigger(self::EVENT_BEFORE_REQUEST);
+					<!-- 请求处理 -->
+		            $this->state = self::STATE_HANDLING_REQUEST;
+		            $response = $this->handleRequest($this->getRequest());
+					<!-- 请求后事件处理 -->
+		            $this->state = self::STATE_AFTER_REQUEST;
+		            $this->trigger(self::EVENT_AFTER_REQUEST);
+					<!-- 发送相应 -->
+		            $this->state = self::STATE_SENDING_RESPONSE;
+		            $response->send();
+					<!-- 请求结束 -->
+		            $this->state = self::STATE_END;
+
+		            return $response->exitStatus;
+
+				abstract public function handlerRequest($request)
+	
+
+
+				Application::end($status = 0, $response = null)
+					 if ($this->state === self::STATE_BEFORE_REQUEST || $this->state === self::STATE_HANDLING_REQUEST) {
+			            $this->state = self::STATE_AFTER_REQUEST;
+			            $this->trigger(self::EVENT_AFTER_REQUEST);
+			        }
+
+			        if ($this->state !== self::STATE_SENDING_RESPONSE && $this->state !== self::STATE_END) {
+			            $this->state = self::STATE_END;
+			            $response = $response ?: $this->getResponse();
+			            $response->send();
+			        }
+
+			        if (YII_ENV_TEST) {
+			            throw new ExitException($status);
+			        }
+
+			        exit($status);
+
+		7. yii\web\Application 		        
+			properties:
+				$errorHandler
+				$homeUrl
+				$request
+				$response
+				$session
+				$user
+
+				$defaultRoute 		# 默认路由
+				$catchAll 			# 捕捉全部请求，用于网站维护
+				$controller 		# 当前控制器实例
 
 			methods:
-					
+				bootstrap()
+					$request = $this->getRequest();
+			        Yii::setAlias('@webroot', dirname($request->getScriptFile()));
+			        Yii::setAlias('@web', $request->getBaseUrl());
+
+			        parent::bootstrap();
+
+			    handlerRequest()
+			    	
+
+			    getHomeUrl()
+			    	if ($this->_homeUrl === null) {
+			            if ($this->getUrlManager()->showScriptName) {
+			                return $this->getRequest()->getScriptUrl();
+			            }
+
+			            return $this->getRequest()->getBaseUrl() . '/';
+			        }
+
+			        return $this->_homeUrl;    
+			    setHomeUrl()    
+
+			    getReqeust()
+			    getResponse()
+			    getErrorHandler()
+			    getSession()
+			    getUser()
+
+			    coreComponents()
+			    	return array_merge(parent::coreComponents(), [
+			            'request' => ['class' => 'yii\web\Request'],
+			            'response' => ['class' => 'yii\web\Response'],
+			            'session' => ['class' => 'yii\web\Session'],
+			            'user' => ['class' => 'yii\web\User'],
+			            'errorHandler' => ['class' => 'yii\web\ErrorHandler'],
+			        ]);
+			
