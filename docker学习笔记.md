@@ -15,6 +15,8 @@
 		结合docker image ls 删除
 		docker image rm $(docker image ls -q redis)
 		docker image rm $(docker image ls -q -f before=mongo:3.2)
+
+	 
 	
 ## Dockerfile配置指令
 
@@ -79,3 +81,63 @@
 > 容器启动
 	docker run 				# 新建并启动
 	docker container start 	# 启动已经终止容器		
+
+> 后台运行
+	docker run -d
+
+> 终止容器
+	docker container stop 
+	exit
+	ctrl+D
+
+> 进入容器
+	docker run -d 会在后台运行容器
+	1. docker attach 容器ID 	# 进入容器。如果从这个stdin中退出，导致容器停止
+	2. docker exec				# 退出bash时，不会导致容器停止【推荐】
+
+	docker run -dit ubuntu
+	docker container ls 
+	docker exec -it 容器id bash  
+
+> 导入和导出容器
+	docker export # 将容器导出为本地文件
+		docker container ls -a
+		docker export 容器id > ubuntu.tar
+	docker import # 导入为镜像
+		cat ubuntu.tar | docker import - test/ubuntu:v1.0  # 后边也可以接url docker import remote/url.tgz example/dir
+		docker image ls
+		
+	docker import和docker load的区别
+		docker load 导入镜像存储文件到本地镜像库，保存记录完整，体积也更大。	
+
+> 删除容器
+	docker container rm 容器名
+		docker container rm trusting_newton
+
+> 清理所有处于中止状态的容器
+	docker container prune		
+
+		
+> 其他命令	
+	docker container logs 容器id或者 名称 	## 显示日志
+	docker container ls -a  				## 容器列表
+	docker container restart 				## 启动一个停止的容器
+
+## 仓库（repository)
+	注册服务器（Registry), 一个服务器，上边可以有很多仓库(一般表示一个单独的项目或者目录)
+
+> Docker Hub
+	官方仓库，网址 https://hub.docker.com
+
+	docker login 	# 登录
+	docker logout 	# 退出
+	docker search 	# 搜索镜像
+	docker pull 	# 拉取镜像
+	docker push 	# 推送镜像
+
+	自动构建： 指定关联的目标网站，选择自动构建，选择目标中的项目（包含dockerfile）和分支，在docker hub的timeline中查看构建历史和状态
+
+> 私有仓库
+	docker registry 工具
+
+	nexus 3.x 	
