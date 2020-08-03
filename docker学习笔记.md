@@ -141,3 +141,101 @@
 	docker registry 工具
 
 	nexus 3.x 	
+
+## 数据管理
+	
+	数据管理的两种方式
+		1.数据卷(volumes)
+		2.挂载主机目录(bind mounts)
+
+> 数据卷
+
+	数据卷的特点
+		1. 可以在容器之间共享和重用
+		2. 对数据卷的修改立马生效
+		3. 对数据卷的更新，不会影响镜像
+		4. 数据卷会默认一直存在，即便容器被删除
+
+	数据卷相关命令	
+		docker volume create my-vol 	# 创建数据卷
+		docker volume ls 				# 查看所有数据卷
+		docker volume inspect my-vol 	# 查看指定数据卷的信息
+		docker run -d -P \				# 创建一个名为 web 的容器，并加载一个 数据卷 到容器的 /webapp目录中
+			--name web \
+			# -v my-vol:/webapp \
+			--mount source=my-vol,target=/webapp \
+			training/webapp \
+			python app.py
+
+		docker inspect web 				# （容器内）查看web容器的信息	
+		docker volume rm my-vol 		# 删除数据卷
+		docker rm -v 					# 删除容器时移除数据卷
+		docker volume prune 			# 删除无主的数据卷
+
+> 主机目录
+	
+	加载主机目录中的 /src/webapp目录到容器的 /opt/webapp目录
+	docker run -d -P \
+		--name web \
+		# -v /src/webapp:/opt/webapp \
+		--mount type=bind,source=/src/webapp,target=/opt/webapp \
+		training/webapp \
+		python app.py	
+
+	默认权限时读写，只读可以如下方式制定
+		--mount type=bind,source=/src/webapp,target=/opt/webapp, readonly
+
+	挂在一个本地主机文件作为数据卷
+		docker run --rm -it \
+			# -v $HOME/.bash_history:/root/.bash_history \
+			--mount type=bind,source=$HOME/.bash_history,target=/root/.bash_history \
+			ubuntu:18.04 \
+			bash #可以记录在容器中输入过的命令
+
+
+## 网络
+
+	允许通过 访问外部网路 或者 容器互联的方式 提供网络服务
+
+> 外部访问容器
+	
+	docker run -d -P training/webapp python app.py 	# —P 随机映射主机端口（49000-49900）到内部容器开放的网络端口	
+	docker container ls -l  	# 查看容器 0.0.0.0:49115->5000	
+	docker logs -f nostalgic_morse # 查看应用请求信息
+	docker port nostalgic_morse 5000 # 查看端口映射信息
+
+	-p 指定要映射的端口的格式
+		ip地址:主机端口:容器端口 | ip地址::容器端口 | 主机端口: 容器端口
+
+	可以使用多次
+		docker run -d \
+			-p 5000:5000 \
+			-p 3000:80 \
+			training/webapp \
+			python app.py	
+
+> 容器互联
+
+	docker network create -d bridge my-net # 新建网络 	-d:指定网络类型：bridge overlay
+	docker run -it --rm --name busybox1 --network my-net busybox sh # 运行一个容器并连接到新建的my-net网络
+	docker run -it --rm --name busybox2 --network my-net busybox sh
+
+	docker container ls
+
+	ping busybox2 # 在busybox1中输入
+
+	docker compose # 多个容器之间需要互相连接，推荐使用
+
+> 配置容器DNS
+
+	在容器中使用 mount命令查看挂载信息
+
+	全部容器的DNS配置，也可以用 /etc/docker/daemon.json配置
+
+	启动容器时，手动指定相关参数
+
+
+#### Docker安装elasticsearch
+
+	1. docker pull docker.elastic.co/elasticsearch/elasticsearch:7.6.2
+	2. docker run -p 9200:9200 -p 9300:9300 -e "discovery.type=single-node" docker.elastic.co/elasticsearch/elasticsearch:7.6.2

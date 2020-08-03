@@ -282,3 +282,21 @@ backend/index.php 入口文件
 			            'errorHandler' => ['class' => 'yii\web\ErrorHandler'],
 			        ]);
 			
+
+#### Yii2 翻译配置读取数据库
+	
+	config/main.php
+
+	'components' => [
+		'i18n' => [
+	        'translations' => [
+	            '*' => [
+	                'class' => 'yii\i18n\DbMessageSource',
+	                'messageTable' => '{{%lang_message}}',
+	                'sourceMessageTable' => '{{%lang_source_message}}',
+	                'db' => 'db',
+	                'enableCaching' => false,
+	            ],
+	        ],
+	    ],
+	]
