@@ -1,3 +1,98 @@
+#### 安装
+ uname -r 		# 查看内核版本号 
+ uname -a		# 查询所有内核信息 
+ 怎么更新内核？？？
+
+ yum update 	# 更新yum packages
+
+ # 更新docker yum 仓库
+
+	 tee /etc/yum.repos.d/docker.repo <<-'EOF'
+		[dockerrepo]
+		name=Docker Repository
+		baseurl=https://yum.dockerproject.org/repo/main/centos/7/
+		enabled=1
+		gpgcheck=1
+		Development Environment
+		[ 30 ]
+		gpgkey=https://yum.dockerproject.org/gpg
+		EOF
+
+	yum install docker-engine 
+	systemctl enable docker.service 	# 加入开机启动
+	systemctl start docker 				# 开启docker
+
+
+	#### 安装后
+		默认为root用户所有，其他用户使用需要使用sudo，很不方便，所以添加一个组，把要使用的用户加入改组就好了
+		groupadd docker
+		usermod -aG docker my_username 
+
+	#### 查看版本
+		docker --version && docker-compose --version && docker-machine --version
+
+	#### 后台运行docker，本机端口8080映射到容器端口80， 下载nginx镜像并命名为webserver-test
+		docker run -d -p 8080:80 --name webserver-test nginx
+	#### 查看运行的容器
+		docker ps
+	#### 关闭容器
+		docker stop webserver-test
+	#### 启动容器(已经存在的)
+		docker start webserver-test
+	#### 移除容器
+		docker rm -f webserver-test
+
+	#### 移除镜像
+		docker rmi nginx
+
+## git 相关命令
+	#### 初始化
+		本地目录初始化 进入目录 git init
+		远程仓库 	git clone /path/to/repository 本地目录
+					git clone user@host:/path/to/repository
+
+	git三棵树
+							add 				commit
+		working directories -----> index(stage) --------> head				
+		开发目录 					文件缓存区 			指向最新的commit记录
+
+	#### 基本操作
+		git add <filename>
+		git commit -m <commit message>
+		git push origin <branch name>	# 把本地的head同步到远程仓库
+
+		git remote add origin <server> # 新增仓库提交到远程
+
+	#### 分支操作
+		git branch -b <new branch>
+		git checkout <branch name>
+		git branch -d <branch name> # 删除分支
+		git push origin <branch>	# 提交分支到远程仓库，其他人才可以使用
+
+	#### 拉取操作
+		git pull = git fetch + git merge
+
+		git fetch 拉取远程仓库的commit-id,获取远程仓库提交的更新
+		git pull  拉取远程修改并更新代码，合并到当前分支中
+		git merge <branch> 合并分支		
+
+		冲突
+			git checkout -- <filename> 	# 使用别人的
+			git fetch origin and git reset --hard origin/master # 撤销本地修改和commit
+
+	#### git工作流
+		feature branch workflow 功能分支工作流
+		gitflow workflow 		release/master/feature 不同分支
+		fork workflow 			# 就是git的那种，不能直接改到原始的仓库，自己拷贝了一份，一个是server端，一个是个人端，没有问题可以申请review
+
+		版本号
+			Major.Minor.Patch 
+			Major 	# 不兼容的大功能
+			Minor 	# 兼容的小功能
+			Patch	# bug fix
+
+		
+
 ## 基础操作
 
 	区分镜像：id和摘要
